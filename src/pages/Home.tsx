@@ -17,17 +17,17 @@ const Home = () => {
     const cachedCity = localStorage.getItem('cityName')
     const cachedLatitude = Number(localStorage.getItem("latitude"))
     const cachedLongitude = Number(localStorage.getItem("longitude"))
-    const cachedMinTemp = localStorage.getItem('minTemp')
-    const cachedMaxTemp = localStorage.getItem('maxTemp')
+    const cachedMinTemp = localStorage.getItem('minTemp') || ''
+    const cachedMaxTemp = localStorage.getItem('maxTemp') || ''
 
     console.log(cachedLatitude, cachedLongitude)
 
-    const [index, setIndex] = useState<number>()
-    const [city, setCity] = useState<number>()
-    const [minTemp, setMinTemp] = useState<number>()
-    const [maxTemp, setMaxTemp] = useState<number>()
-    const [latitudes, setLatitudes] = useState<number>()
-    const [longitudes, setLongitudes] = useState<number>()
+    const [index, setIndex] = useState<number | undefined>(undefined)
+    const [city, setCity] = useState<number | undefined>(undefined)
+    const [minTemp, setMinTemp] = useState<number | undefined>(undefined)
+    const [maxTemp, setMaxTemp] = useState<number | undefined>(undefined)
+    const [latitudes, setLatitudes] = useState<number | undefined>(undefined)
+    const [longitudes, setLongitudes] = useState<number | undefined>(undefined)
     const [timeOut, setTimeOut] = useState<boolean>(false)
     // const [submit, setSubmit] = useState(false)
 
@@ -38,27 +38,27 @@ const Home = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const weatherData = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latitudes}&longitude=${longitudes}&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=1`) || await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${cachedLatitude}&longitude=${cachedLongitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=1`)
-                console.log(weatherData)
+            // try {
+            const weatherData = await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${latitudes}&longitude=${longitudes}&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=1`) || await axios.get(`https://api.open-meteo.com/v1/forecast?latitude=${cachedLatitude}&longitude=${cachedLongitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&forecast_days=1`)
+            console.log(weatherData)
 
-                const { data } = weatherData
-                const { daily, latitude, longitude } = data
-                const { temperature_2m_max, temperature_2m_min } = daily
+            const { data } = weatherData
+            const { daily, latitude, longitude } = data
+            const { temperature_2m_max, temperature_2m_min } = daily
 
-                console.log(temperature_2m_max[0], temperature_2m_min[0])
-                setMinTemp(temperature_2m_min[0])
-                setMaxTemp(temperature_2m_max[0])
+            console.log(temperature_2m_max[0], temperature_2m_min[0])
+            setMinTemp(temperature_2m_min[0])
+            setMaxTemp(temperature_2m_max[0])
 
-                console.log(latitude, longitude)
-                localStorage.setItem("latitude", latitude)
-                localStorage.setItem("longitude", longitude)
-                localStorage.setItem('minTemp', String(temperature_2m_min[0]))
-                localStorage.setItem('maxTemp', String(temperature_2m_max[0]))
-            } catch (e) {
-                localStorage.setItem("latitude", `${latitudes}`)
-                localStorage.setItem("longitude", `${longitudes}`)
-            }
+            console.log(latitude, longitude)
+            localStorage.setItem("latitude", latitude)
+            localStorage.setItem("longitude", longitude)
+            localStorage.setItem('minTemp', String(temperature_2m_min[0]))
+            localStorage.setItem('maxTemp', String(temperature_2m_max[0]))
+            // } catch (e) {
+            //     localStorage.setItem("latitude", `${latitudes}`)
+            //     localStorage.setItem("longitude", `${longitudes}`)
+            // }
             // setSubmit(false)
         }
 
@@ -102,13 +102,29 @@ const Home = () => {
     }, [minTemp, maxTemp])
 
     const handleDisplay = useCallback(({ minT, maxT, avgT, cityValue }: { minT: number, maxT: number, avgT: number, cityValue: number | string }) => {
-        return (<Box textAlign={'center'}>
-            <Typography m={2} variant="h4" component={'h4'} textAlign={'center'} fontWeight={'Bold'}>Results for {typeof cityValue === 'number' ? cities[cityValue]?.city : cityValue || ''}</Typography>
+        return (
+            <Box textAlign={'center'}>
+                <Typography m={2} variant="h4" component={'h4'} textAlign={'center'} fontWeight={'Bold'}>Results for {typeof cityValue === 'number' ? cities[cityValue]?.city : cityValue || ''}</Typography>
 
-            <Typography m={2} fontStyle={'italic'}>Min. Temperature: {minT}°C</Typography>
-            <Typography m={2} fontStyle={'italic'}>Max. Temperature: {maxT}°C</Typography>
-            <Typography m={2} fontStyle={'italic'}>Avg. Temperature: {avgT}°C</Typography>
-        </Box>)
+                {/* { */}
+                    {/* // typeof lat === undefined || typeof lon === undefined ? (<></>) : */}
+                    {/* //     ( */}
+                            <>
+                                {
+                                    avgT ? 
+                                    (
+                                        <>
+                                            <Typography m={2} fontStyle={'italic'}>Min. Temperature: {minT}°C</Typography>
+                                            <Typography m={2} fontStyle={'italic'}>Max. Temperature: {maxT}°C</Typography>
+                                            <Typography m={2} fontStyle={'italic'}>Avg. Temperature: {avgT}°C</Typography>
+                                        </>
+                                    ) : (<></>)
+                                }
+                            </>
+                        {/* ) */}
+                {/* } */}
+            </Box>
+        )
     }, [minTemp, maxTemp, cachedMinTemp, cachedMaxTemp])
 
 
@@ -146,7 +162,7 @@ const Home = () => {
                             // handleDisplay({minT: minTemp, maxT: maxTemp, avgT: averageTemp, cityValue: city})
                             <>
                                 {
-                                    handleDisplay({ minT: minTemp!, maxT: maxTemp!, avgT: averageTemp!, cityValue: city! })
+                                    handleDisplay({ minT: minTemp!, maxT: maxTemp!, avgT: averageTemp!, cityValue: city!})
                                 }
                             </>
 
@@ -155,7 +171,7 @@ const Home = () => {
                         (
                             <>
                                 {
-                                    handleDisplay({ minT: Number(cachedMinTemp), maxT: Number(cachedMaxTemp), avgT: Number(averageCacheTemp), cityValue: cachedCity! })
+                                    handleDisplay({ minT: Number(cachedMinTemp), maxT: Number(cachedMaxTemp), avgT: Number(averageCacheTemp), cityValue: cachedCity!})
                                 }
                             </>
                         )
